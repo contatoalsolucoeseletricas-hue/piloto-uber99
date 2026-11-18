@@ -27,7 +27,7 @@ object CityFilter {
 
     fun normalize(input: String): String {
         val decomposed = Normalizer.normalize(input, Normalizer.Form.NFD)
-        return decomposed.replace(Regex("\p{InCombiningDiacriticalMarks}+"), "").lowercase()
+        return decomposed.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "").lowercase()
     }
 
     fun isRouteAllowed(
