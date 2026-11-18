@@ -38,7 +38,11 @@ class PilotAccessibilityService : AccessibilityService() {
 
         if (texts.isEmpty()) return
 
-        val appName = if (pkg == AppSwitcher.PKG_UBER) "Uber" else "99"
+        val isUber = pkg.contains("uber", ignoreCase = true)
+        val is99 = pkg.contains("99", ignoreCase = true) || pkg.contains("didi", ignoreCase = true)
+        if (!isUber && !is99) return
+
+        val appName = if (isUber) "Uber" else "99"
         val hasOfferButtons = texts.any {
             it.equals("Aceitar", true) || it.equals("Selecionar", true)
         }

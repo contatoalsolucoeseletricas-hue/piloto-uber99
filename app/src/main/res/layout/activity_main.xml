@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Piloto Uber / 99"
+            android:text="Piloto Uber / 99 v1.3"
             android:textColor="#F8FAFC"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -28,21 +28,78 @@
             android:textSize="14sp"
             android:textStyle="bold" />
 
+        <!-- PAINEL DE DIAGNÓSTICO DE PERMISSÕES -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="#1E293B"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Status das Permissões (POCO / MIUI)"
+                android:textColor="#94A3B8"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvPermAccessibilityStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="🔴 Acessibilidade: DESATIVADA"
+                android:textColor="#F87171"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvPermOverlayStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="🔴 Sobreposição (Overlay): BLOQUEADA"
+                android:textColor="#F87171"
+                android:textSize="13sp" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnTogglePilot"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginTop="14dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="12dp"
             android:backgroundTint="#16A34A"
             android:text="LIGAR PILOTO"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold" />
 
+        <!-- BOTÃO DE TESTE / SIMULAÇÃO IMEDIATA -->
+        <Button
+            android:id="@+id/btnSimulateTest"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#2563EB"
+            android:text="🧪 TESTAR VOZ + SIMULAR CORRIDA"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvTestFeedback"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text=""
+            android:textColor="#4ADE80"
+            android:textSize="12sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="12dp"
             android:background="#1E293B"
             android:orientation="vertical"
             android:padding="14dp">
@@ -54,12 +111,12 @@
                 android:checked="true"
                 android:text="Modo Calibração (1 dia sem aceitar)"
                 android:textColor="#F8FAFC"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:text="Mínimo aceito (R$ por km total)"
                 android:textColor="#94A3B8"
                 android:textSize="13sp" />
@@ -97,20 +154,20 @@
                     android:layout_height="48dp"
                     android:text="+0,10"
                     android:textSize="12sp" />
-
-                <Button
-                    android:id="@+id/btnSaveRate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:layout_marginStart="6dp"
-                    android:text="Salvar" />
             </LinearLayout>
+
+            <Button
+                android:id="@+id/btnSaveRate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Salvar Mínimo" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="12dp"
             android:background="#1E293B"
             android:orientation="vertical"
             android:padding="14dp">
@@ -120,10 +177,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="Filtrar só cidades marcadas abaixo"
-                android:textColor="#38BDF8"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:text="Filtro de Cidades (Destino)"
+                android:textColor="#F8FAFC"
+                android:textSize="15sp" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -134,33 +190,34 @@
                 <Button
                     android:id="@+id/btnMarkAllCities"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="6dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     android:text="Marcar Todas"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <Button
                     android:id="@+id/btnClearAllCities"
                     android:layout_width="0dp"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    android:text="Desmarcar Todas"
-                    android:textSize="12sp" />
+                    android:text="Desmarcar"
+                    android:textSize="11sp" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/cityCheckboxContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="6dp"
                 android:orientation="vertical" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="12dp"
             android:background="#1E293B"
             android:orientation="vertical"
             android:padding="14dp">
@@ -168,9 +225,9 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Resumo de Hoje (Local)"
-                android:textColor="#38BDF8"
-                android:textSize="15sp"
+                android:text="Placar do Dia"
+                android:textColor="#94A3B8"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -178,8 +235,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Aceitas: 0 | Recusadas: 0
-Total do dia: R$ 0,00 | Média: R$ 0,00/km"
+                android:text="Aceitas: 0 | Recusadas: 0\nTotal do dia: R$ 0,00 | Média: R$ 0,00/km"
                 android:textColor="#E2E8F0"
                 android:textSize="14sp" />
 
@@ -195,7 +251,7 @@ Total do dia: R$ 0,00 | Média: R$ 0,00/km"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Permissões Obrigatórias (MIUI 14 / POCO)"
+            android:text="Permissões Obrigatórias (Ativar Uma Vez)"
             android:textColor="#94A3B8"
             android:textSize="13sp"
             android:textStyle="bold" />
@@ -205,7 +261,7 @@ Total do dia: R$ 0,00 | Média: R$ 0,00/km"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="1. Ativar Acessibilidade" />
+            android:text="1. Ativar Acessibilidade (Piloto Uber/99)" />
 
         <Button
             android:id="@+id/btnPermOverlay"
