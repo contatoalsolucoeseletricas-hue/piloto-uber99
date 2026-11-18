@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Piloto Uber/99</string>
+    <string name="accessibility_desc">Lê cartões de oferta da Uber Driver e 99 Motorista para calcular R$/km, R$/hora, filtro de cidades e total do dia.</string>
+</resources>
