@@ -2,8 +2,8 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
     android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagReportViewIds|flagRetrieveInteractiveWindows|flagIncludeNotImportantViews"
-    android:canPerformGestures="true"
+    android:accessibilityFlags="flagReportViewIds|flagIncludeNotImportantViews"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_desc"
-    android:notificationTimeout="150" />
+    android:notificationTimeout="150"
+    android:packageNames="com.ubercab.driver,com.taxis99.driver,com.app99.driver,com.didiglobal.driver" />

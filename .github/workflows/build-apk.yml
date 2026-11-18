@@ -1,4 +1,4 @@
-name: Build Piloto Uber99 APK
+name: Build Piloto Uber99 Release APK
 
 on:
   push:
@@ -23,14 +23,40 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      - name: Generate Release Keystore
+        env:
+          KS_PASS: "PilotoUber99Release2026!"
+          KEY_ALIAS: "piloto_release"
+        run: |
+          keytool -genkeypair -v \
+            -keystore app/release.jks \
+            -storetype PKCS12 \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -alias "$KEY_ALIAS" \
+            -storepass "$KS_PASS" \
+            -keypass "$KS_PASS" \
+            -dname "CN=AL Solucoes Piloto Uber99, OU=Mobile, O=AL Solucoes, L=Canoas, ST=RS, C=BR"
+
       - name: Run Unit Tests
         run: gradle testDebugUnitTest --no-daemon
 
-      - name: Build Debug APK
-        run: gradle assembleDebug --no-daemon
+      - name: Build Signed Release APK
+        env:
+          RELEASE_STORE_FILE: "release.jks"
+          RELEASE_STORE_PASSWORD: "PilotoUber99Release2026!"
+          RELEASE_KEY_ALIAS: "piloto_release"
+          RELEASE_KEY_PASSWORD: "PilotoUber99Release2026!"
+        run: gradle assembleRelease --no-daemon
 
-      - name: Upload Debug APK
+      - name: Verify APK Signature and Output
+        run: |
+          ls -lh app/build/outputs/apk/release/app-release.apk
+          cp app/build/outputs/apk/release/app-release.apk app-release-v1.4-assinado.apk
+
+      - name: Upload Signed Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: piloto-uber99-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: piloto-uber99-release-v1.4-apk
+          path: app-release-v1.4-assinado.apk
