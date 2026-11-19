@@ -133,4 +133,72 @@ class RideRuleEvaluatorTest {
         assertFalse(res.accepted)
         assertEquals(1.375, res.ratePerKm, 0.01)
     }
+
+    @Test
+    fun doc50_print1_99Pop_24_40_rejects_1_21() {
+        val lines = listOf(
+            "99Pop",
+            "R$24,40",
+            "R$1,10 por embarque distante incl.",
+            "5 min (2,1 km)",
+            "24 min (18,1 km)",
+            "Aceitar"
+        )
+        val offer = RideOfferParser.parseNodes("99", lines)
+        assertNotNull(offer)
+        assertEquals(24.40, offer!!.fareBrl, 0.01)
+        assertEquals(2.1, offer.pickupKm, 0.01)
+        assertEquals(18.1, offer.tripKm, 0.01)
+        assertEquals(20.2, offer.totalKm, 0.01)
+        assertEquals(29, offer.totalMinutes)
+        val res = RideRuleEvaluator.evaluate(offer, 1.40)
+        assertFalse(res.accepted)
+        assertEquals(1.208, res.ratePerKm, 0.01)
+    }
+
+    @Test
+    fun doc50_print2_99Pop_24_50_ignores_per_km_accepts_1_54() {
+        val lines = listOf(
+            "99Pop",
+            "R$24,50",
+            "R$1,54/km",
+            "R$1,10 por espera longa incl.",
+            "5 min (1,5 km)",
+            "40 min (14,4 km)",
+            "Aceitar"
+        )
+        val offer = RideOfferParser.parseNodes("99", lines)
+        assertNotNull(offer)
+        assertEquals(24.50, offer!!.fareBrl, 0.01)
+        assertEquals(1.5, offer.pickupKm, 0.01)
+        assertEquals(14.4, offer.tripKm, 0.01)
+        assertEquals(15.9, offer.totalKm, 0.01)
+        assertEquals(45, offer.totalMinutes)
+        val res = RideRuleEvaluator.evaluate(offer, 1.40)
+        assertTrue(res.accepted)
+        assertEquals(1.541, res.ratePerKm, 0.01)
+        assertEquals(32.66, res.ratePerHour, 0.5)
+    }
+
+    @Test
+    fun doc50_print3_99Pop_17_20_accepts_1_46() {
+        val lines = listOf(
+            "99Pop",
+            "R$17,20",
+            "R$1,38 por embarque distante incl.",
+            "6 min (2,2 km)",
+            "25 min (9,6 km)",
+            "Aceitar"
+        )
+        val offer = RideOfferParser.parseNodes("99", lines)
+        assertNotNull(offer)
+        assertEquals(17.20, offer!!.fareBrl, 0.01)
+        assertEquals(2.2, offer.pickupKm, 0.01)
+        assertEquals(9.6, offer.tripKm, 0.01)
+        assertEquals(11.8, offer.totalKm, 0.01)
+        assertEquals(31, offer.totalMinutes)
+        val res = RideRuleEvaluator.evaluate(offer, 1.40)
+        assertTrue(res.accepted)
+        assertEquals(1.458, res.ratePerKm, 0.01)
+    }
 }

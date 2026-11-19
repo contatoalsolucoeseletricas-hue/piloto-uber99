@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Piloto Uber / 99 v1.5"
+            android:text="Piloto Uber / 99 v1.6"
             android:textColor="#F8FAFC"
             android:textSize="24sp"
             android:textStyle="bold" />
@@ -62,6 +62,24 @@
                 android:text="🔴 Sobreposição (Overlay): BLOQUEADA"
                 android:textColor="#F87171"
                 android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvDiagnosticTts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="🔊 Motor TTS: INICIALIZANDO"
+                android:textColor="#38BDF8"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvDiagnosticLastApp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="📱 Último app visto: Nenhum"
+                android:textColor="#CBD5E1"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <Button

@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvLogPreview: TextView
     private lateinit var tvPermAccessibilityStatus: TextView
     private lateinit var tvPermOverlayStatus: TextView
+    private lateinit var tvDiagnosticTts: TextView
+    private lateinit var tvDiagnosticLastApp: TextView
     private lateinit var btnSimulateTest: Button
     private lateinit var tvTestFeedback: TextView
     private var testVoice: VoiceAnnouncer? = null
@@ -49,6 +51,8 @@ class MainActivity : AppCompatActivity() {
         tvLogPreview = findViewById(R.id.tvLogPreview)
         tvPermAccessibilityStatus = findViewById(R.id.tvPermAccessibilityStatus)
         tvPermOverlayStatus = findViewById(R.id.tvPermOverlayStatus)
+        tvDiagnosticTts = findViewById(R.id.tvDiagnosticTts)
+        tvDiagnosticLastApp = findViewById(R.id.tvDiagnosticLastApp)
         btnSimulateTest = findViewById(R.id.btnSimulateTest)
         tvTestFeedback = findViewById(R.id.tvTestFeedback)
 
@@ -91,11 +95,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnSimulateTest.setOnClickListener {
-            val simulatedText = "Boa! Um e quarenta e oito o km, quarenta e dois a hora."
+            testVoice?.playBeep()
+            val simulatedText = "Boa! Dois e trinta o km, setenta e cinco a hora"
             testVoice?.speak(simulatedText)
-            tvTestFeedback.text = "✅ Voz emitida no canal de mídia (STREAM_MUSIC)!"
+            val ttsStatus = VoiceAnnouncer.realStatus
+            Toast.makeText(this, "TTS: $ttsStatus", Toast.LENGTH_LONG).show()
+            tvTestFeedback.text = "✅ Bip + Voz emitidos! Status TTS: $ttsStatus"
             val timeNow = java.text.SimpleDateFormat("HH:mm", java.util.Locale.US).format(java.util.Date())
-            prefs.lastReadSummary = "[$timeNow] SIMULAÇÃO: 99 R$ 15,80 · R$ 1,48/km · R$ 42/h"
+            prefs.lastDecision = "ACEITAR"
+            prefs.lastReadSummary = "SIMULAÇÃO: 99 · R$ 2,30/km · R$ 75/h [$timeNow]"
             if (Settings.canDrawOverlays(this)) {
                 try {
                     startService(Intent(this, OverlayService::class.java))
@@ -221,10 +229,14 @@ class MainActivity : AppCompatActivity() {
     private fun refreshUi() {
         val hasOverlay = Settings.canDrawOverlays(this)
         val hasAccessibility = isAccessibilityEnabled(this, PilotAccessibilityService::class.java)
+        val serviceActive = PilotAccessibilityService.isConnected
 
-        if (hasAccessibility) {
-            tvPermAccessibilityStatus.text = "🟢 Acessibilidade: ATIVADA E MONITORANDO"
+        if (hasAccessibility && serviceActive) {
+            tvPermAccessibilityStatus.text = "🟢 Acessibilidade: CONECTADA E ATIVA"
             tvPermAccessibilityStatus.setTextColor(Color.parseColor("#4ADE80"))
+        } else if (hasAccessibility && !serviceActive) {
+            tvPermAccessibilityStatus.text = "🟡 Acessibilidade: PERMITIDA (Aguardando serviço iniciar)"
+            tvPermAccessibilityStatus.setTextColor(Color.parseColor("#FACC15"))
         } else {
             tvPermAccessibilityStatus.text = "🔴 Acessibilidade: DESATIVADA (Clique abaixo para ativar)"
             tvPermAccessibilityStatus.setTextColor(Color.parseColor("#F87171"))
@@ -237,6 +249,9 @@ class MainActivity : AppCompatActivity() {
             tvPermOverlayStatus.text = "🔴 Sobreposição (Overlay): BLOQUEADA (Clique abaixo para permitir)"
             tvPermOverlayStatus.setTextColor(Color.parseColor("#F87171"))
         }
+
+        tvDiagnosticTts.text = "🔊 Motor TTS: ${VoiceAnnouncer.realStatus}"
+        tvDiagnosticLastApp.text = "📱 Último app visto: ${prefs.lastPackageSeen}"
 
         val state = if (prefs.pilotEnabled) "LIGADO" else "DESLIGADO"
         val mode = if (prefs.calibrationMode) "MODO CALIBRAÇÃO (NÃO ACEITA)" else "ACEITE AUTOMÁTICO"

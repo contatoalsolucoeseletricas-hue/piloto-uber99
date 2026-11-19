@@ -14,6 +14,12 @@ import java.util.Date
 import java.util.Locale
 
 class PilotAccessibilityService : AccessibilityService() {
+    companion object {
+        var isConnected: Boolean = false
+        var lastPackageSeen: String = "Nenhum"
+        var lastPackageTime: String = "--:--"
+    }
+
     private lateinit var prefs: PilotPreferences
     private lateinit var voice: VoiceAnnouncer
     private var lastSignature: String = ""
@@ -21,12 +27,18 @@ class PilotAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        isConnected = true
         prefs = PilotPreferences(this)
         voice = VoiceAnnouncer(this)
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val pkg = event?.packageName?.toString() ?: return
+        lastPackageSeen = pkg
+        lastPackageTime = SimpleDateFormat("HH:mm", Locale.US).format(Date())
+        if (!::prefs.isInitialized) prefs = PilotPreferences(this)
+        prefs.lastPackageSeen = "$pkg ($lastPackageTime)"
+
         if (!prefs.pilotEnabled) return
 
         val rootNodes = mutableListOf<AccessibilityNodeInfo>()
@@ -56,13 +68,17 @@ class PilotAccessibilityService : AccessibilityService() {
         if (texts.isEmpty()) return
 
         val isUber = pkg.contains("uber", ignoreCase = true)
-        val is99 = pkg.contains("99", ignoreCase = true) || pkg.contains("didi", ignoreCase = true)
-        if (!isUber && !is99) return
+        val is99 = pkg.contains("99", ignoreCase = true) || pkg.contains("didi", ignoreCase = true) || pkg.contains("gsui", ignoreCase = true) || pkg.contains("taxi", ignoreCase = true)
 
-        val appName = if (isUber) "Uber" else "99"
         val hasOfferButtons = texts.any {
             it.equals("Aceitar", true) || it.equals("Selecionar", true)
         }
+        val hasMoney = texts.any { it.contains("R$") || it.contains("R $") }
+        val hasDist = texts.any { it.contains("km", ignoreCase = true) || it.contains("m)", ignoreCase = true) }
+
+        if (!isUber && !is99 && !(hasOfferButtons && hasMoney && hasDist)) return
+
+        val appName = if (isUber) "Uber" else "99"
         if (!hasOfferButtons) return
 
         val signature = "$pkg|${texts.joinToString("|")}"
@@ -98,6 +114,7 @@ class PilotAccessibilityService : AccessibilityService() {
         val hourPartUi = if (hourInt > 0) " · R$ $hourInt/h" else ""
         val timeNow = SimpleDateFormat("HH:mm", Locale.US).format(Date())
 
+        prefs.lastDecision = if (result.accepted) "ACEITAR" else "RECUSAR"
         prefs.lastReadSummary = "[$timeNow] $appName R$ $farePt · R$ $ratePt/km$hourPartUi"
         startService(Intent(this, OverlayService::class.java))
 
@@ -213,9 +230,12 @@ class PilotAccessibilityService : AccessibilityService() {
         }
     }
 
-    override fun onInterrupt() {}
+    override fun onInterrupt() {
+        isConnected = false
+    }
 
     override fun onDestroy() {
+        isConnected = false
         voice.shutdown()
         super.onDestroy()
     }

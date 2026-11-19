@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.IBinder
@@ -73,8 +74,15 @@ class OverlayService : Service() {
                 y = 180
             }
             view.setOnClickListener {
-                prefs.pilotEnabled = !prefs.pilotEnabled
-                updateBadge()
+                if (!PilotAccessibilityService.isConnected) {
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                    startActivity(intent)
+                } else {
+                    prefs.pilotEnabled = !prefs.pilotEnabled
+                    updateBadge()
+                }
             }
             windowManager?.addView(view, params)
             overlayView = view
@@ -86,14 +94,37 @@ class OverlayService : Service() {
 
     private fun updateBadge() {
         try {
-            val tvStatus = overlayView?.findViewById<TextView>(R.id.tvOverlayStatus) ?: return
+            val tvDecision = overlayView?.findViewById<TextView>(R.id.tvOverlayDecision) ?: return
             val tvRate = overlayView?.findViewById<TextView>(R.id.tvOverlayRate) ?: return
             val tvTotal = overlayView?.findViewById<TextView>(R.id.tvOverlayTotal) ?: return
-            val state = if (prefs.pilotEnabled) "ON" else "OFF"
+
+            if (!PilotAccessibilityService.isConnected) {
+                tvDecision.text = "⚠️ ACESSIBILIDADE OFF"
+                tvDecision.setTextColor(Color.parseColor("#EF4444"))
+                tvRate.text = "Toque aqui para reativar"
+                tvRate.setTextColor(Color.parseColor("#FCA5A5"))
+            } else {
+                when (prefs.lastDecision) {
+                    "ACEITAR" -> {
+                        tvDecision.text = "✅ BOA · ACEITAR"
+                        tvDecision.setTextColor(Color.parseColor("#22C55E"))
+                    }
+                    "RECUSAR" -> {
+                        tvDecision.text = "❌ FRACA · RECUSAR"
+                        tvDecision.setTextColor(Color.parseColor("#EF4444"))
+                    }
+                    else -> {
+                        val state = if (prefs.pilotEnabled) "PILOTO ON" else "PILOTO OFF"
+                        tvDecision.text = "$state · MONITORANDO"
+                        tvDecision.setTextColor(Color.parseColor("#FACC15"))
+                    }
+                }
+                tvRate.text = prefs.lastReadSummary
+                tvRate.setTextColor(Color.parseColor("#FFFFFF"))
+            }
+
             val mode = if (prefs.calibrationMode) "CAL" else "AUTO"
-            tvStatus.text = "PILOTO $state · $mode"
-            tvRate.text = prefs.lastReadSummary
-            tvTotal.text = String.format(Locale("pt", "BR"), "Total dia: R$ %.2f (%d)", prefs.estimatedEarnings, prefs.acceptedCount)
+            tvTotal.text = String.format(Locale("pt", "BR"), "%s · Total dia: R$ %.2f (%d)", mode, prefs.estimatedEarnings, prefs.acceptedCount)
         } catch (e: Exception) {
             Log.e("OverlayService", "Erro updateBadge: ${e.message}")
         }

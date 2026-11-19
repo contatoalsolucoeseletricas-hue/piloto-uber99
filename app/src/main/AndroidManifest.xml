@@ -7,10 +7,16 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
         <package android:name="com.ubercab.driver" />
         <package android:name="com.taxis99.driver" />
         <package android:name="com.app99.driver" />
         <package android:name="com.didiglobal.driver" />
+        <package android:name="com.sdu.didi.gsui" />
+        <package android:name="com.didi.brazil.driver" />
+        <package android:name="com.xiaojukeji.didi.global.driver" />
     </queries>
 
     <application

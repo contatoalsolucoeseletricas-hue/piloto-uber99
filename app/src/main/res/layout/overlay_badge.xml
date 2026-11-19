@@ -3,32 +3,35 @@
     android:id="@+id/overlayRoot"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="#CC0F172A"
+    android:background="#DD0F172A"
     android:orientation="vertical"
     android:padding="10dp">
 
     <TextView
-        android:id="@+id/tvOverlayStatus"
+        android:id="@+id/tvOverlayDecision"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="PILOTO ON · CAL"
-        android:textColor="#4ADE80"
-        android:textSize="12sp"
+        android:text="PILOTO ON · MONITORANDO"
+        android:textColor="#FACC15"
+        android:textSize="15sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvOverlayRate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
         android:text="R$ --/km · R$ --/h"
         android:textColor="#FFFFFF"
-        android:textSize="13sp" />
+        android:textSize="13sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/tvOverlayTotal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
         android:text="Total dia: R$ 0,00"
         android:textColor="#38BDF8"
-        android:textSize="12sp" />
+        android:textSize="11sp" />
 </LinearLayout>

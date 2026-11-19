@@ -72,6 +72,14 @@ class PilotPreferences(context: Context) {
         get() = prefs.getString("last_read_summary", "R$ --/km · R$ --/h") ?: "R$ --/km · R$ --/h"
         set(value) = prefs.edit().putString("last_read_summary", value).apply()
 
+    var lastDecision: String
+        get() = prefs.getString("last_decision", "AGUARDANDO") ?: "AGUARDANDO"
+        set(value) = prefs.edit().putString("last_decision", value).apply()
+
+    var lastPackageSeen: String
+        get() = prefs.getString("last_package_seen", "Nenhum") ?: "Nenhum"
+        set(value) = prefs.edit().putString("last_package_seen", value).apply()
+
     var acceptedCount: Int
         get() = prefs.getInt("accepted_count", 0)
         set(value) = prefs.edit().putInt("accepted_count", value).apply()

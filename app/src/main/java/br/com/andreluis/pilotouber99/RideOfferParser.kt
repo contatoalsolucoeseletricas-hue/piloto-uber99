@@ -16,14 +16,25 @@ object RideOfferParser {
         val cleanLines = lines.filter { line ->
             !line.contains("dirigir entre", ignoreCase = true) &&
             !line.contains("espera longa", ignoreCase = true) &&
+            !line.contains("embarque distante", ignoreCase = true) &&
             !line.contains("Taxa de deslocamento", ignoreCase = true) &&
             !line.contains("Dinâmico", ignoreCase = true) &&
-            !line.contains("incl.", ignoreCase = true)
+            !line.contains("incl.", ignoreCase = true) &&
+            !line.contains("/km", ignoreCase = true) &&
+            !line.contains("/h", ignoreCase = true) &&
+            !line.contains("/min", ignoreCase = true)
         }
 
         // Se houver múltiplos valores em R$, escolhe o maior valor monetário principal do card
-        val allFares = cleanLines.mapNotNull { line ->
-            moneyRegex.find(line)?.let { m -> toDoubleFlexible(m.groupValues[1]) }
+        val allFares = cleanLines.flatMap { line ->
+            moneyRegex.findAll(line).mapNotNull { m ->
+                val afterMatch = line.substring(m.range.last + 1).trimStart()
+                if (afterMatch.startsWith("/km", ignoreCase = true) || afterMatch.startsWith("/h", ignoreCase = true)) {
+                    null
+                } else {
+                    toDoubleFlexible(m.groupValues[1])
+                }
+            }
         }
         val fare = allFares.maxOrNull() ?: return null
         if (fare <= 0.0) return null
