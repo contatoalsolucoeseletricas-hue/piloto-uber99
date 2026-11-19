@@ -131,6 +131,16 @@
                 android:textColor="#F8FAFC"
                 android:textSize="15sp" />
 
+            <Switch
+                android:id="@+id/switchVoice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:checked="false"
+                android:text="Anunciar por Voz (Padrão: DESLIGADO)"
+                android:textColor="#F8FAFC"
+                android:textSize="15sp" />
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

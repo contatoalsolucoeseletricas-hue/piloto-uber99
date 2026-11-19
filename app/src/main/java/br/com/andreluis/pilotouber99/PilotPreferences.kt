@@ -68,6 +68,18 @@ class PilotPreferences(context: Context) {
         get() = prefs.getStringSet("allowed_cities", CityFilter.ALL_CITIES.toSet()) ?: CityFilter.ALL_CITIES.toSet()
         set(value) = prefs.edit().putStringSet("allowed_cities", value).apply()
 
+    var voiceEnabled: Boolean
+        get() = prefs.getBoolean("voice_enabled", false) // Doc 51: DESLIGADO de fábrica para passageiro
+        set(value) = prefs.edit().putBoolean("voice_enabled", value).apply()
+
+    var lastRateText: String
+        get() = prefs.getString("last_rate_text", "R$ --/km · R$ --/h") ?: "R$ --/km · R$ --/h"
+        set(value) = prefs.edit().putString("last_rate_text", value).apply()
+
+    var lastDetailsText: String
+        get() = prefs.getString("last_details_text", "Aguardando oferta...") ?: "Aguardando oferta..."
+        set(value) = prefs.edit().putString("last_details_text", value).apply()
+
     var lastReadSummary: String
         get() = prefs.getString("last_read_summary", "R$ --/km · R$ --/h") ?: "R$ --/km · R$ --/h"
         set(value) = prefs.edit().putString("last_read_summary", value).apply()

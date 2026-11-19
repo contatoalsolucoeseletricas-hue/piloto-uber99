@@ -3,10 +3,11 @@
     android:id="@+id/overlayRoot"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="#DD0F172A"
+    android:background="#EE0F172A"
     android:orientation="vertical"
-    android:padding="10dp">
+    android:padding="12dp">
 
+    <!-- Linha 1: Decisão Clara em Destaque + Horário -->
     <TextView
         android:id="@+id/tvOverlayDecision"
         android:layout_width="wrap_content"
@@ -16,6 +17,7 @@
         android:textSize="15sp"
         android:textStyle="bold" />
 
+    <!-- Linha 2 (Grande e Rápida de Bater o Olho): R$/km e R$/h -->
     <TextView
         android:id="@+id/tvOverlayRate"
         android:layout_width="wrap_content"
@@ -23,15 +25,27 @@
         android:layout_marginTop="2dp"
         android:text="R$ --/km · R$ --/h"
         android:textColor="#FFFFFF"
-        android:textSize="13sp"
+        android:textSize="17sp"
         android:textStyle="bold" />
 
+    <!-- Linha 3 (Compacta): App + Valor + Km Total + Minutos -->
+    <TextView
+        android:id="@+id/tvOverlayDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:text="Aguardando primeira oferta..."
+        android:textColor="#38BDF8"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <!-- Linha 4: Total do Dia -->
     <TextView
         android:id="@+id/tvOverlayTotal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:text="Total dia: R$ 0,00"
-        android:textColor="#38BDF8"
-        android:textSize="11sp" />
+        android:text="Total dia: R$ 0,00 (0)"
+        android:textColor="#94A3B8"
+        android:textSize="10sp" />
 </LinearLayout>

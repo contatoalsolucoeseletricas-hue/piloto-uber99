@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvStatusBadge: TextView
     private lateinit var btnTogglePilot: Button
     private lateinit var switchCalibration: Switch
+    private lateinit var switchVoice: Switch
     private lateinit var switchCityFilter: Switch
     private lateinit var etMinRate: EditText
     private lateinit var tvStats: TextView
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         tvStatusBadge = findViewById(R.id.tvStatusBadge)
         btnTogglePilot = findViewById(R.id.btnTogglePilot)
         switchCalibration = findViewById(R.id.switchCalibration)
+        switchVoice = findViewById(R.id.switchVoice)
         switchCityFilter = findViewById(R.id.switchCityFilter)
         etMinRate = findViewById(R.id.etMinRate)
         tvStats = findViewById(R.id.tvStats)
@@ -57,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         tvTestFeedback = findViewById(R.id.tvTestFeedback)
 
         switchCalibration.isChecked = prefs.calibrationMode
+        switchVoice.isChecked = prefs.voiceEnabled
         switchCityFilter.isChecked = prefs.cityFilterEnabled
         etMinRate.setText(String.format(Locale.US, "%.2f", prefs.minRatePerKm))
 
@@ -100,9 +103,11 @@ class MainActivity : AppCompatActivity() {
             testVoice?.speak(simulatedText)
             val ttsStatus = VoiceAnnouncer.realStatus
             Toast.makeText(this, "TTS: $ttsStatus", Toast.LENGTH_LONG).show()
-            tvTestFeedback.text = "✅ Bip + Voz emitidos! Status TTS: $ttsStatus"
+            tvTestFeedback.text = "✅ Bip tocado! Status TTS: $ttsStatus"
             val timeNow = java.text.SimpleDateFormat("HH:mm", java.util.Locale.US).format(java.util.Date())
             prefs.lastDecision = "ACEITAR"
+            prefs.lastRateText = "R$ 2,30/km  ·  R$ 75/h"
+            prefs.lastDetailsText = "99 · R$ 42,00 · 18,2 km · 33 min [$timeNow]"
             prefs.lastReadSummary = "SIMULAÇÃO: 99 · R$ 2,30/km · R$ 75/h [$timeNow]"
             if (Settings.canDrawOverlays(this)) {
                 try {
@@ -115,6 +120,12 @@ class MainActivity : AppCompatActivity() {
         switchCalibration.setOnCheckedChangeListener { _, isChecked ->
             prefs.calibrationMode = isChecked
             refreshUi()
+        }
+
+        switchVoice.setOnCheckedChangeListener { _, isChecked ->
+            prefs.voiceEnabled = isChecked
+            val msg = if (isChecked) "Voz ATIVADA" else "Voz DESLIGADA (Modo Silencioso com Passageiro)"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
 
         switchCityFilter.setOnCheckedChangeListener { _, isChecked ->

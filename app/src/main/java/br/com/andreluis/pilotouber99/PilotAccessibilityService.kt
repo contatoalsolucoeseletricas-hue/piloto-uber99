@@ -111,10 +111,13 @@ class PilotAccessibilityService : AccessibilityService() {
         val ratePt = String.format(ptBr, "%.2f", result.ratePerKm)
         val hourInt = result.ratePerHour.toInt()
         val farePt = String.format(ptBr, "%.2f", offer.fareBrl)
+        val distPt = String.format(ptBr, "%.1f", offer.totalKm)
         val hourPartUi = if (hourInt > 0) " · R$ $hourInt/h" else ""
         val timeNow = SimpleDateFormat("HH:mm", Locale.US).format(Date())
 
         prefs.lastDecision = if (result.accepted) "ACEITAR" else "RECUSAR"
+        prefs.lastRateText = "R$ $ratePt/km  ·  R$ $hourInt/h"
+        prefs.lastDetailsText = "$appName · R$ $farePt · $distPt km · ${offer.totalMinutes} min [$timeNow]"
         prefs.lastReadSummary = "[$timeNow] $appName R$ $farePt · R$ $ratePt/km$hourPartUi"
         startService(Intent(this, OverlayService::class.java))
 
@@ -135,8 +138,10 @@ class PilotAccessibilityService : AccessibilityService() {
         prefs.addRideHistory(historyEntry)
 
         if (prefs.calibrationMode) {
-            val cityNote = if (result.blockedCity != null) ", fora da rota ${result.blockedCity}" else ""
-            voice.speak("Calibração $appName. $spokenRate o km$hourPartSpeech$cityNote.")
+            if (prefs.voiceEnabled) {
+                val cityNote = if (result.blockedCity != null) ", fora da rota ${result.blockedCity}" else ""
+                voice.speak("Calibração $appName. $spokenRate o km$hourPartSpeech$cityNote.")
+            }
             return
         }
 
@@ -144,17 +149,21 @@ class PilotAccessibilityService : AccessibilityService() {
         if (result.accepted) {
             val clicked = clickActionButton(nodes, listOf("Aceitar", "Selecionar"))
             if (clicked) {
-                voice.speak("Boa! $spokenRate o km$hourPartSpeech.")
+                if (prefs.voiceEnabled) {
+                    voice.speak("Boa! $spokenRate o km$hourPartSpeech.")
+                }
                 val otherPkg = AppSwitcher.resolveOtherAppPackage(this, pkg)
                 if (otherPkg != null) {
                     AppSwitcher.switchApp(this, otherPkg, "GO_OFFLINE", prefs)
                 }
             }
         } else {
-            if (result.blockedCity != null) {
-                voice.speak("Fora da rota! ${result.blockedCity}.")
-            } else {
-                voice.speak("Fraca. $spokenRate o km$hourPartSpeech.")
+            if (prefs.voiceEnabled) {
+                if (result.blockedCity != null) {
+                    voice.speak("Fora da rota! ${result.blockedCity}.")
+                } else {
+                    voice.speak("Fraca. $spokenRate o km$hourPartSpeech.")
+                }
             }
         }
     }

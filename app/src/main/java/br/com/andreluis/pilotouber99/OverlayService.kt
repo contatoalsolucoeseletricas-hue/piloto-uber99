@@ -96,13 +96,15 @@ class OverlayService : Service() {
         try {
             val tvDecision = overlayView?.findViewById<TextView>(R.id.tvOverlayDecision) ?: return
             val tvRate = overlayView?.findViewById<TextView>(R.id.tvOverlayRate) ?: return
+            val tvDetails = overlayView?.findViewById<TextView>(R.id.tvOverlayDetails) ?: return
             val tvTotal = overlayView?.findViewById<TextView>(R.id.tvOverlayTotal) ?: return
 
             if (!PilotAccessibilityService.isConnected) {
                 tvDecision.text = "⚠️ ACESSIBILIDADE OFF"
                 tvDecision.setTextColor(Color.parseColor("#EF4444"))
-                tvRate.text = "Toque aqui para reativar"
+                tvRate.text = "Toque para reativar"
                 tvRate.setTextColor(Color.parseColor("#FCA5A5"))
+                tvDetails.text = "Serviço pausado pelo sistema"
             } else {
                 when (prefs.lastDecision) {
                     "ACEITAR" -> {
@@ -119,12 +121,14 @@ class OverlayService : Service() {
                         tvDecision.setTextColor(Color.parseColor("#FACC15"))
                     }
                 }
-                tvRate.text = prefs.lastReadSummary
+                tvRate.text = prefs.lastRateText
                 tvRate.setTextColor(Color.parseColor("#FFFFFF"))
+                tvDetails.text = prefs.lastDetailsText
             }
 
             val mode = if (prefs.calibrationMode) "CAL" else "AUTO"
-            tvTotal.text = String.format(Locale("pt", "BR"), "%s · Total dia: R$ %.2f (%d)", mode, prefs.estimatedEarnings, prefs.acceptedCount)
+            val totalCount = prefs.acceptedCount + prefs.rejectedCount
+            tvTotal.text = String.format(Locale("pt", "BR"), "%s · Total dia: R$ %.2f (%d aceitas de %d)", mode, prefs.estimatedEarnings, prefs.acceptedCount, totalCount)
         } catch (e: Exception) {
             Log.e("OverlayService", "Erro updateBadge: ${e.message}")
         }
