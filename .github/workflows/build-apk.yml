@@ -53,10 +53,10 @@ jobs:
       - name: Verify APK Signature and Output
         run: |
           ls -lh app/build/outputs/apk/release/app-release.apk
-          cp app/build/outputs/apk/release/app-release.apk app-release-v1.4-assinado.apk
+          cp app/build/outputs/apk/release/app-release.apk app-release-v1.5-assinado.apk
 
       - name: Upload Signed Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: piloto-uber99-release-v1.4-apk
-          path: app-release-v1.4-assinado.apk
+          name: piloto-uber99-release-v1.5-apk
+          path: app-release-v1.5-assinado.apk

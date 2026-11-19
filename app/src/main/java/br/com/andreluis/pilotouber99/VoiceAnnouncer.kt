@@ -1,20 +1,33 @@
 package br.com.andreluis.pilotouber99
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
+import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import java.util.Locale
 
-class VoiceAnnouncer(context: Context) : TextToSpeech.OnInitListener {
+class VoiceAnnouncer(private val context: Context) : TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = TextToSpeech(context.applicationContext, this)
     private var ready = false
     private val pendingQueue = mutableListOf<String>()
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             val res = tts?.setLanguage(Locale("pt", "BR"))
             ready = (res != TextToSpeech.LANG_MISSING_DATA && res != TextToSpeech.LANG_NOT_SUPPORTED)
             if (ready) {
+                // Força canal de mídia (STREAM_MUSIC) para falar mesmo no silencioso/Não Perturbe
+                val audioAttributes = AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
+                tts?.setAudioAttributes(audioAttributes)
+                tts?.setSpeechRate(1.25f) // Fala rápida e sem enrolação
+
                 synchronized(pendingQueue) {
                     for (msg in pendingQueue) {
                         speakInternal(msg)
@@ -41,10 +54,30 @@ class VoiceAnnouncer(context: Context) : TextToSpeech.OnInitListener {
 
     private fun speakInternal(text: String) {
         try {
+            requestTransientFocus()
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "piloto_${System.currentTimeMillis()}")
         } catch (e: Exception) {
             Log.e("VoiceAnnouncer", "Falha speak: ${e.message}")
         }
+    }
+
+    private fun requestTransientFocus() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val focusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                            .build()
+                    )
+                    .build()
+                audioManager?.requestAudioFocus(focusRequest)
+            } else {
+                @Suppress("DEPRECATION")
+                audioManager?.requestAudioFocus(null, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+            }
+        } catch (_: Exception) {}
     }
 
     fun shutdown() {

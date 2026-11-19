@@ -89,4 +89,48 @@ class RideRuleEvaluatorTest {
         assertFalse(blocked.accepted)
         assertEquals("Alvorada", blocked.blockedCity)
     }
+
+    @Test
+    fun doc48_andreRealPrint1_99Motorista_accepts_1_48_per_km() {
+        val lines = listOf(
+            "99Pop",
+            "R$15,80",
+            "R$1,38 por dirigir entre áreas",
+            "5 min (1,6 km)",
+            "19 min (9,1 km)",
+            "Aceitar"
+        )
+        val offer = RideOfferParser.parseNodes("99", lines)
+        assertNotNull(offer)
+        assertEquals(15.80, offer!!.fareBrl, 0.01)
+        assertEquals(1.6, offer.pickupKm, 0.01)
+        assertEquals(9.1, offer.tripKm, 0.01)
+        assertEquals(10.7, offer.totalKm, 0.01)
+        assertEquals(24, offer.totalMinutes)
+        val res = RideRuleEvaluator.evaluate(offer, 1.40)
+        assertTrue(res.accepted)
+        assertEquals(1.476, res.ratePerKm, 0.01)
+    }
+
+    @Test
+    fun doc48_andreRealPrint2_99Motorista_rejects_1_37_per_km() {
+        val lines = listOf(
+            "99Pop",
+            "R$15,40",
+            "R$1,10 por espera longa incl.",
+            "4 min (1 km)",
+            "25 min (10,2 km)",
+            "Aceitar"
+        )
+        val offer = RideOfferParser.parseNodes("99", lines)
+        assertNotNull(offer)
+        assertEquals(15.40, offer!!.fareBrl, 0.01)
+        assertEquals(1.0, offer.pickupKm, 0.01)
+        assertEquals(10.2, offer.tripKm, 0.01)
+        assertEquals(11.2, offer.totalKm, 0.01)
+        assertEquals(29, offer.totalMinutes)
+        val res = RideRuleEvaluator.evaluate(offer, 1.40)
+        assertFalse(res.accepted)
+        assertEquals(1.375, res.ratePerKm, 0.01)
+    }
 }

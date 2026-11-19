@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Piloto Uber / 99 v1.3"
+            android:text="Piloto Uber / 99 v1.5"
             android:textColor="#F8FAFC"
             android:textSize="24sp"
             android:textStyle="bold" />

@@ -28,13 +28,30 @@ class PilotAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val pkg = event?.packageName?.toString() ?: return
         if (!prefs.pilotEnabled) return
-        val root = rootInActiveWindow ?: return
 
-        handlePendingSwitchIfNeeded(pkg, root)
+        val rootNodes = mutableListOf<AccessibilityNodeInfo>()
+        rootInActiveWindow?.let { rootNodes.add(it) }
+        try {
+            for (w in windows) {
+                w.root?.let { wRoot ->
+                    if (rootNodes.none { it == wRoot }) {
+                        rootNodes.add(wRoot)
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        if (rootNodes.isEmpty()) return
+
+        for (r in rootNodes) {
+            handlePendingSwitchIfNeeded(pkg, r)
+        }
 
         val nodes = mutableListOf<AccessibilityNodeInfo>()
         val texts = mutableListOf<String>()
-        collectNodes(root, nodes, texts)
+        for (r in rootNodes) {
+            collectNodes(r, nodes, texts)
+        }
 
         if (texts.isEmpty()) return
 
@@ -50,7 +67,7 @@ class PilotAccessibilityService : AccessibilityService() {
 
         val signature = "$pkg|${texts.joinToString("|")}"
         val now = System.currentTimeMillis()
-        if (signature == lastSignature && (now - lastOfferTimestamp) < 4000L) return
+        if (signature == lastSignature && (now - lastOfferTimestamp) < 12000L) return
         lastSignature = signature
         lastOfferTimestamp = now
 
@@ -78,33 +95,56 @@ class PilotAccessibilityService : AccessibilityService() {
         val ratePt = String.format(ptBr, "%.2f", result.ratePerKm)
         val hourInt = result.ratePerHour.toInt()
         val farePt = String.format(ptBr, "%.2f", offer.fareBrl)
-        val hourPartSpeech = if (hourInt > 0) ", $hourInt reais por hora" else ""
         val hourPartUi = if (hourInt > 0) " · R$ $hourInt/h" else ""
+        val timeNow = SimpleDateFormat("HH:mm", Locale.US).format(Date())
 
-        prefs.lastReadSummary = "$appName R$ $farePt · R$ $ratePt/km$hourPartUi"
+        prefs.lastReadSummary = "[$timeNow] $appName R$ $farePt · R$ $ratePt/km$hourPartUi"
         startService(Intent(this, OverlayService::class.java))
 
+        val spokenRate = formatSpokenRate(result.ratePerKm)
+        val hourPartSpeech = if (hourInt > 0) ", $hourInt a hora" else ""
+
+        val historyEntry = RideHistoryEntry(
+            timestamp = timeNow,
+            appName = appName,
+            fareBrl = offer.fareBrl,
+            totalKm = offer.totalKm,
+            totalMinutes = offer.totalMinutes,
+            ratePerKm = result.ratePerKm,
+            ratePerHour = result.ratePerHour,
+            accepted = result.accepted,
+            reason = result.reason
+        )
+        prefs.addRideHistory(historyEntry)
+
         if (prefs.calibrationMode) {
-            val cityNote = if (result.blockedCity != null) ", fora da rota: ${result.blockedCity}" else ""
-            voice.speak("Calibração $appName, corrida $farePt reais, $ratePt por km$hourPartSpeech$cityNote")
+            val cityNote = if (result.blockedCity != null) ", fora da rota ${result.blockedCity}" else ""
+            voice.speak("Calibração $appName. $spokenRate o km$hourPartSpeech$cityNote.")
             return
         }
 
         prefs.recordOffer(result.accepted, offer.fareBrl, result.ratePerKm)
-        val totalDiaInt = prefs.estimatedEarnings.toInt()
         if (result.accepted) {
             val clicked = clickActionButton(nodes, listOf("Aceitar", "Selecionar"))
             if (clicked) {
-                voice.speak("Aceitei $appName, corrida $farePt reais, $ratePt por km$hourPartSpeech. Total do dia: $totalDiaInt reais")
+                voice.speak("Boa! $spokenRate o km$hourPartSpeech.")
                 val otherPkg = AppSwitcher.resolveOtherAppPackage(this, pkg)
                 if (otherPkg != null) {
                     AppSwitcher.switchApp(this, otherPkg, "GO_OFFLINE", prefs)
                 }
             }
         } else {
-            val reasonPart = if (result.blockedCity != null) ", cidade fora da rota: ${result.blockedCity}" else ""
-            voice.speak("Recusei $appName, corrida $farePt reais, $ratePt por km$hourPartSpeech$reasonPart")
+            if (result.blockedCity != null) {
+                voice.speak("Fora da rota! ${result.blockedCity}.")
+            } else {
+                voice.speak("Fraca. $spokenRate o km$hourPartSpeech.")
+            }
         }
+    }
+
+    private fun formatSpokenRate(rate: Double): String {
+        val rounded = String.format(Locale("pt", "BR"), "%.2f", rate)
+        return rounded.replace(",", " e ")
     }
 
     private fun handlePendingSwitchIfNeeded(pkg: String, root: AccessibilityNodeInfo) {

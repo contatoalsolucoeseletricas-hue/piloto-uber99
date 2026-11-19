@@ -91,10 +91,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnSimulateTest.setOnClickListener {
-            val simulatedText = "Teste Piloto Uber 99: Corrida simulada de 42 reais, 2 reais e 30 centavos por quilômetro. Aceite automático validado com sucesso!"
+            val simulatedText = "Boa! Um e quarenta e oito o km, quarenta e dois a hora."
             testVoice?.speak(simulatedText)
-            tvTestFeedback.text = "✅ Teste executado! Voz emitida e regras validadas."
-            prefs.lastReadSummary = "SIMULAÇÃO: Uber R$ 42,00 · R$ 2,30/km · R$ 75/h"
+            tvTestFeedback.text = "✅ Voz emitida no canal de mídia (STREAM_MUSIC)!"
+            val timeNow = java.text.SimpleDateFormat("HH:mm", java.util.Locale.US).format(java.util.Date())
+            prefs.lastReadSummary = "[$timeNow] SIMULAÇÃO: 99 R$ 15,80 · R$ 1,48/km · R$ 42/h"
             if (Settings.canDrawOverlays(this)) {
                 try {
                     startService(Intent(this, OverlayService::class.java))
@@ -249,6 +250,15 @@ class MainActivity : AppCompatActivity() {
             prefs.estimatedEarnings,
             prefs.averageRate()
         )
-        tvLogPreview.text = "Última leitura: ${prefs.lastReadSummary}"
+        val history = prefs.getRideHistory()
+        val historyText = if (history.isEmpty()) {
+            "Nenhuma corrida registrada hoje ainda."
+        } else {
+            history.take(5).joinToString("\n") { h ->
+                val status = if (h.accepted) "✅ ACEITA" else "❌ NEGADA"
+                "[${h.timestamp}] ${h.appName}: R$ ${String.format(Locale("pt", "BR"), "%.2f", h.fareBrl)} (${String.format(Locale("pt", "BR"), "%.1f", h.totalKm)} km, ${h.totalMinutes} min) -> R$ ${String.format(Locale("pt", "BR"), "%.2f", h.ratePerKm)}/km · $status"
+            }
+        }
+        tvLogPreview.text = "Última leitura: ${prefs.lastReadSummary}\n\n--- HISTÓRICO RECENTE ---\n$historyText"
     }
 }

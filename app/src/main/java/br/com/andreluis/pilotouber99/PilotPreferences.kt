@@ -1,6 +1,49 @@
 package br.com.andreluis.pilotouber99
 
 import android.content.Context
+import org.json.JSONArray
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+data class RideHistoryEntry(
+    val timestamp: String,
+    val appName: String,
+    val fareBrl: Double,
+    val totalKm: Double,
+    val totalMinutes: Int,
+    val ratePerKm: Double,
+    val ratePerHour: Double,
+    val accepted: Boolean,
+    val reason: String
+) {
+    fun toJson(): JSONObject = JSONObject().apply {
+        put("timestamp", timestamp)
+        put("appName", appName)
+        put("fareBrl", fareBrl)
+        put("totalKm", totalKm)
+        put("totalMinutes", totalMinutes)
+        put("ratePerKm", ratePerKm)
+        put("ratePerHour", ratePerHour)
+        put("accepted", accepted)
+        put("reason", reason)
+    }
+
+    companion object {
+        fun fromJson(obj: JSONObject): RideHistoryEntry = RideHistoryEntry(
+            timestamp = obj.optString("timestamp", ""),
+            appName = obj.optString("appName", ""),
+            fareBrl = obj.optDouble("fareBrl", 0.0),
+            totalKm = obj.optDouble("totalKm", 0.0),
+            totalMinutes = obj.optInt("totalMinutes", 0),
+            ratePerKm = obj.optDouble("ratePerKm", 0.0),
+            ratePerHour = obj.optDouble("ratePerHour", 0.0),
+            accepted = obj.optBoolean("accepted", false),
+            reason = obj.optString("reason", "")
+        )
+    }
+}
 
 class PilotPreferences(context: Context) {
     private val prefs = context.getSharedPreferences("piloto_uber99_prefs", Context.MODE_PRIVATE)
@@ -68,6 +111,33 @@ class PilotPreferences(context: Context) {
         rateSamples += 1
     }
 
+    fun addRideHistory(entry: RideHistoryEntry) {
+        try {
+            val list = getRideHistory().toMutableList()
+            list.add(0, entry) // mais recente primeiro
+            if (list.size > 50) {
+                list.removeAt(list.size - 1)
+            }
+            val arr = JSONArray()
+            list.forEach { arr.put(it.toJson()) }
+            prefs.edit().putString("ride_history_json", arr.toString()).apply()
+        } catch (_: Exception) {}
+    }
+
+    fun getRideHistory(): List<RideHistoryEntry> {
+        return try {
+            val raw = prefs.getString("ride_history_json", null) ?: return emptyList()
+            val arr = JSONArray(raw)
+            val list = mutableListOf<RideHistoryEntry>()
+            for (i in 0 until arr.length()) {
+                list.add(RideHistoryEntry.fromJson(arr.getJSONObject(i)))
+            }
+            list
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
     fun averageRate(): Double = if (rateSamples > 0) rateSum / rateSamples else 0.0
 
     fun resetDay() {
@@ -76,5 +146,6 @@ class PilotPreferences(context: Context) {
         estimatedEarnings = 0.0
         rateSum = 0.0
         rateSamples = 0
+        prefs.edit().remove("ride_history_json").apply()
     }
 }
